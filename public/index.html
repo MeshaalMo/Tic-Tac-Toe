@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic-Tac-Toe</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@900&display=swap" rel="stylesheet">
+    <script src="app.js"></script>
+</head>
+<body>
+    <h1>Welcome To Tic-Tac-Toe</h1>
+    <div class="container hide">
+        <div class="disable-dbl-tap-zoom" id="00" onclick="play(this)">&nbsp;</div>
+        <div class="disable-dbl-tap-zoom" id="01" onclick="play(this)">&nbsp;</div>
+        <div class="disable-dbl-tap-zoom" id="02" onclick="play(this)">&nbsp;</div>
+        <div class="disable-dbl-tap-zoom" id="10" onclick="play(this)">&nbsp;</div>
+        <div class="disable-dbl-tap-zoom" id="11" onclick="play(this)">&nbsp;</div>
+        <div class="disable-dbl-tap-zoom" id="12" onclick="play(this)">&nbsp;</div>
+        <div class="disable-dbl-tap-zoom" id="20" onclick="play(this)">&nbsp;</div>
+        <div class="disable-dbl-tap-zoom" id="21" onclick="play(this)">&nbsp;</div>
+        <div class="disable-dbl-tap-zoom" id="22" onclick="play(this)">&nbsp;</div>
+    </div>
+    <div class="symbol">
+        <button class="disable-dbl-tap-zoom" onclick="chooseSym(this)">X</button>
+        <button class="disable-dbl-tap-zoom" onclick="chooseSym(this)">O</button>
+    </div>
+
+    <button class="hide disable-dbl-tap-zoom" onclick="playAgain()">Play Again</button>
+</body>
+</html>
