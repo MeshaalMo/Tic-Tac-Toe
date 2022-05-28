@@ -26,7 +26,7 @@ function chooseSym(e) {
 
 function play(e) {
     //Check if played
-    if (currentState[e.id[0]][e.id[1]] == 0) {
+    if (currentState[e.id[0]][e.id[1]] == 0 && !isTerminal(currentState)) {
         e.innerHTML = playerSym
         currentState[e.id[0]][e.id[1]] = -1
         if(!isTerminal(currentState))
