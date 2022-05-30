@@ -1,11 +1,12 @@
-var playerSym = ""
-var aiSym = "O"
+var player_symbol = ""
+var AI_symbol = "O"
 // 0 if not played, -1 opponent, 1 for AI
-var currentState = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+var currentState = { board: [[0, 0, 0], [0, 0, 0], [0, 0, 0]], actions: ['00', '01', '02', '10', '11', '12', '20', '21', '22'] }
+var winPos = { '00': 3, '01': 2, '02': 3, '10': 2, '11': 4, '12': 2, '20': 3, '21': 2, '22': 3 }
 
 function playAgain() {
     //Reset the game 
-    currentState = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+    currentState = { board: [[0, 0, 0], [0, 0, 0], [0, 0, 0]], actions: ['00', '01', '02', '10', '11', '12', '20', '21', '22'] }
     document.querySelector('h1').innerHTML = "Let's do it"
 
     for (i = 0; i < 3; i++)
@@ -16,54 +17,52 @@ function playAgain() {
 
 function chooseSym(e) {
     //Select symbol
-    playerSym = e.innerHTML
-    if(playerSym == aiSym)
-        aiSym = "X"
+    player_symbol = e.innerHTML
+    if (player_symbol == AI_symbol)
+        AI_symbol = "X"
     document.querySelector('.symbol').classList.add('hide')
     document.querySelector('.container').classList.remove('hide')
     document.querySelector('button.hide').classList.remove('hide')
+    document.querySelector('h1').innerHTML = "Let's do it"
+
 }
 
 function play(e) {
     //Check if played
-    if (currentState[e.id[0]][e.id[1]] == 0 && !isTerminal(currentState)) {
-        e.innerHTML = playerSym
-        currentState[e.id[0]][e.id[1]] = -1
-        if(!isTerminal(currentState))
+    if (currentState.board[e.id[0]][e.id[1]] == 0 && !isTerminal(currentState)) {
+        e.innerHTML = player_symbol
+        currentState.board[e.id[0]][e.id[1]] = -1
+        currentState.actions = currentState.actions.filter((v, i, arr) => v != e.id)
+        if (!isTerminal(currentState))
             alphaBetaSearch(currentState)
     }
     let state = gameUtility(currentState)
-    if(state == 1)
+    if (state == 1)
         document.querySelector('h1').innerHTML = "AI is the smartest📯"
-    else if(state == -1)
+    else if (state == -1)
         document.querySelector('h1').innerHTML = "WoW you won📯"
-    else if(isTerminal(currentState))
+    else if (isTerminal(currentState))
         document.querySelector('h1').innerHTML = "Draw"
 
-    console.log(currentState)
-
 }
-c=0
+
 //***********   Logic   ***********\\
 
+//Sate of the game: 1 -> AI won,  0 -> Tie, -1 -> AI lose
 function gameUtility(state) {
-    for (i = 0; i < state.length; i++) {
-        sum = state[i].reduce((prev, current) => prev + current, 0)
-        if (sum == 3)
+    //Check Rows & Cols
+    for (i = 0; i < state.board.length; i++) {
+        sum_row = state.board[i].reduce((prev, current) => prev + current, 0)
+        sum_col = 0
+        for (j = 0; j < state.board.length; j++)
+            sum_col += state.board[j][i]
+        if (sum_row == 3 || sum_col == 3)
             return 1
-        if (sum == -3)
+        if (sum_row == -3 || sum_col == -3)
             return -1
     }
-    for (i = 0; i < state.length; i++) {
-        sum = 0
-        for (j = 0; j < state.length; j++)
-            sum += state[j][i]
-        if (sum == 3)
-            return 1
-        if (sum == -3)
-            return -1
-    }
-    sum = [state[0][0] + state[1][1] + state[2][2], state[0][2] + state[1][1] + state[2][0]]
+    //Check Diagonals
+    sum = [state.board[0][0] + state.board[1][1] + state.board[2][2], state.board[0][2] + state.board[1][1] + state.board[2][0]]
     if (sum[0] == 3 || sum[1] == 3)
         return 1
     if (sum[0] == -3 || sum[1] == -3)
@@ -73,8 +72,9 @@ function gameUtility(state) {
 
 function alphaBetaSearch(state) {
     t = maxValue(state, -2, 2)
-    state[t[1][0]][t[1][1]] = 1
-    document.getElementById(t[1]).innerHTML = aiSym
+    state.board[t[1][0]][t[1][1]] = 1
+    currentState.actions = currentState.actions.filter((v, i, arr) => v != t[1])
+    document.getElementById(t[1]).innerHTML = AI_symbol
     return t
 }
 
@@ -83,25 +83,23 @@ function maxValue(state, alpha, beta) {
         return [gameUtility(state), null]
     let v = -2
     let move = null
-    for (let i = 0; i < state.length; i++) {
-        for (let j = 0; j < state[i].length; j++) {
-            if (state[i][j] == 0) {
-                newState = copy(state)
-                newState[i][j] = 1
-                let t = minValue(newState, alpha, beta)
-                let v2 = t[0]
-                a2 = t[1]
-                if (v2 > v) {
-                    v = v2
-                    move = '' + i + j
-                    alpha = Math.max(alpha, v)
-                }
-                if (v >= beta){
-                    return [v, move]
-                }
-            }
+    state.actions.every(a => {
+        newState = copy(state)
+        newState.board[a[0]][a[1]] = 1
+        newState.actions = newState.actions.filter((v, i, arr) => v != a)
+        let t = minValue(newState, alpha, beta)
+        let v2 = t[0]
+        if (v2 > v) {
+            v = v2
+            move = a
+            alpha = Math.max(alpha, v)          
         }
-    }
+        if (v >= beta) {
+            console.log('Max burn')
+            return false
+        }
+        return true
+    })
     return [v, move]
 }
 
@@ -110,40 +108,32 @@ function minValue(state, alpha, beta) {
         return [gameUtility(state), null]
     let v = 2
     let move = null
-
-    for (let i = 0; i < state.length; i++) {
-        for (let j = 0; j < state[i].length; j++) {
-            if (state[i][j] == 0) {
-                newState = copy(state)
-                newState[i][j] = -1
-                let t = maxValue(newState, alpha, beta)
-                let v2 = t[0]
-                a2 = t[1]
-                if (v2 < v) {
-                    console.log('v changed')
-                    v = v2
-                    move = '' + i + j
-                    beta = Math.min(beta, v)
-                }
-                if (v <= alpha)
-                    return [v, move]
-            }
+    state.actions.every(a => {
+        newState = copy(state)
+        newState.board[a[0]][a[1]] = -1
+        newState.actions = newState.actions.filter((v, i, arr) => v != a)
+        let t = maxValue(newState, alpha, beta)
+        let v2 = t[0]
+        if (v2 < v) {
+            v = v2
+            move = a
+            beta = Math.min(beta, v)
         }
-    }
+        if (v <= alpha) {
+            console.log('Min burn')
+            return false
+        }
+        return true
+    })
     return [v, move]
 }
 
 function isTerminal(state) {
-    if(gameUtility(state) == 0)
-        for (i = 0; i < state.length; i++)
-            for (j = 0; j < state[i].length; j++) {
-                if (state[i][j] == 0)
-                    return false
-            }
+    if (!gameUtility(state) && state.actions.length)
+        return false
     return true
 }
 
 function copy(state) {
-    return state.map(e => [...e])
+    return { board: state.board.map(e => [...e]), actions: [...state.actions] }
 }
-
