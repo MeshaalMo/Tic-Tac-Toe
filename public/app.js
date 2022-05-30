@@ -1,12 +1,11 @@
 var player_symbol = ""
 var AI_symbol = "O"
 // 0 if not played, -1 opponent, 1 for AI
-var currentState = { board: [[0, 0, 0], [0, 0, 0], [0, 0, 0]], actions: ['00', '01', '02', '10', '11', '12', '20', '21', '22'] }
-var winPos = { '00': 3, '01': 2, '02': 3, '10': 2, '11': 4, '12': 2, '20': 3, '21': 2, '22': 3 }
+var currentState = { board: [[0, 0, 0], [0, 0, 0], [0, 0, 0]], actions: ['11', '00', '02', '20', '22', '12', '01', '10', '21'] }
 
 function playAgain() {
     //Reset the game 
-    currentState = { board: [[0, 0, 0], [0, 0, 0], [0, 0, 0]], actions: ['00', '01', '02', '10', '11', '12', '20', '21', '22'] }
+    currentState = { board: [[0, 0, 0], [0, 0, 0], [0, 0, 0]], actions: ['11', '00', '02', '20', '22', '12', '01', '10', '21'] }
     document.querySelector('h1').innerHTML = "Let's do it"
 
     for (i = 0; i < 3; i++)
@@ -92,7 +91,7 @@ function maxValue(state, alpha, beta) {
         if (v2 > v) {
             v = v2
             move = a
-            alpha = Math.max(alpha, v)          
+            alpha = Math.max(alpha, v)
         }
         if (v >= beta) {
             console.log('Max burn')
