@@ -1,5 +1,6 @@
 var player_symbol = ""
 var AI_symbol = "O"
+var depth = 0
 // 0 if not played, -1 opponent, 1 for AI
 var currentState = { board: [[0, 0, 0], [0, 0, 0], [0, 0, 0]], actions: ['11', '00', '02', '20', '22', '12', '01', '10', '21'] }
 
@@ -7,7 +8,7 @@ function playAgain() {
     //Reset the game 
     currentState = { board: [[0, 0, 0], [0, 0, 0], [0, 0, 0]], actions: ['11', '00', '02', '20', '22', '12', '01', '10', '21'] }
     document.querySelector('h1').innerHTML = "Let's do it"
-
+    depth = 0
     for (i = 0; i < 3; i++)
         for (j = 0; j < 3; j++)
             document.getElementById('' + i + j).innerHTML = '&nbsp;'
@@ -32,13 +33,14 @@ function play(e) {
         e.innerHTML = player_symbol
         currentState.board[e.id[0]][e.id[1]] = -1
         currentState.actions = currentState.actions.filter((v, i, arr) => v != e.id)
+        depth++
         if (!isTerminal(currentState))
             alphaBetaSearch(currentState)
     }
-    let state = gameUtility(currentState)
-    if (state == 1)
+    let state = gameUtility(currentState,0)
+    if (state > 0)
         document.querySelector('h1').innerHTML = "AI is the smartest📯"
-    else if (state == -1)
+    else if (state < 0)
         document.querySelector('h1').innerHTML = "WoW you won📯"
     else if (isTerminal(currentState))
         document.querySelector('h1').innerHTML = "Draw"
@@ -48,7 +50,7 @@ function play(e) {
 //***********   Logic   ***********\\
 
 //Sate of the game: 1 -> AI won,  0 -> Tie, -1 -> AI lose
-function gameUtility(state) {
+function gameUtility(state,depth) {
     //Check Rows & Cols
     for (i = 0; i < state.board.length; i++) {
         sum_row = state.board[i].reduce((prev, current) => prev + current, 0)
@@ -56,37 +58,38 @@ function gameUtility(state) {
         for (j = 0; j < state.board.length; j++)
             sum_col += state.board[j][i]
         if (sum_row == 3 || sum_col == 3)
-            return 1
+            return 10-depth
         if (sum_row == -3 || sum_col == -3)
-            return -1
+            return -10
     }
     //Check Diagonals
     sum = [state.board[0][0] + state.board[1][1] + state.board[2][2], state.board[0][2] + state.board[1][1] + state.board[2][0]]
     if (sum[0] == 3 || sum[1] == 3)
-        return 1
+        return 10-depth
     if (sum[0] == -3 || sum[1] == -3)
-        return -1
+        return -10
     return 0
 }
 
 function alphaBetaSearch(state) {
-    t = maxValue(state, -2, 2)
+    t = maxValue(state, -11, 11, depth)
     state.board[t[1][0]][t[1][1]] = 1
     currentState.actions = currentState.actions.filter((v, i, arr) => v != t[1])
     document.getElementById(t[1]).innerHTML = AI_symbol
+    depth++
     return t
 }
 
-function maxValue(state, alpha, beta) {
+function maxValue(state, alpha, beta, depth) {
     if (isTerminal(state))
-        return [gameUtility(state), null]
-    let v = -2
+        return [gameUtility(state,depth), null]
+    let v = -10
     let move = null
     state.actions.every(a => {
         newState = copy(state)
         newState.board[a[0]][a[1]] = 1
         newState.actions = newState.actions.filter((v, i, arr) => v != a)
-        let t = minValue(newState, alpha, beta)
+        let t = minValue(newState, alpha, beta, depth+1)
         let v2 = t[0]
         if (v2 > v) {
             v = v2
@@ -102,16 +105,16 @@ function maxValue(state, alpha, beta) {
     return [v, move]
 }
 
-function minValue(state, alpha, beta) {
+function minValue(state, alpha, beta, depth) {
     if (isTerminal(state))
-        return [gameUtility(state), null]
-    let v = 2
+        return [gameUtility(state, depth), null]
+    let v = 10
     let move = null
     state.actions.every(a => {
         newState = copy(state)
         newState.board[a[0]][a[1]] = -1
         newState.actions = newState.actions.filter((v, i, arr) => v != a)
-        let t = maxValue(newState, alpha, beta)
+        let t = maxValue(newState, alpha, beta, depth+1)
         let v2 = t[0]
         if (v2 < v) {
             v = v2
@@ -128,7 +131,7 @@ function minValue(state, alpha, beta) {
 }
 
 function isTerminal(state) {
-    if (!gameUtility(state) && state.actions.length)
+    if (!gameUtility(state,0) && state.actions.length)
         return false
     return true
 }
